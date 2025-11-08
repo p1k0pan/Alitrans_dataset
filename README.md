@@ -1,6 +1,6 @@
 # Alib_dataset
 
-## 2025年11月6日
+## 2025年11月8日
 对Alitrans数据集中剩下的数据，用GPT-5进行翻译
 
 图片需要放在`/mnt/workspace/xintong/dataset/alitrans_full_images/`
