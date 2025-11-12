@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     Path(root).mkdir(parents=True, exist_ok=True)
     print("路径保存地址在", root)
-    image_folder = "/mnt/workspace/xintong/dataset/alitrans_full_images/"
+    image_folder = "/mnt/workspace/xintong/dataset/practice_ds_500/"
 
     file = "./ocr_man_correct_notrans.json"
     print("file ", file)

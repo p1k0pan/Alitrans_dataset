@@ -3,7 +3,7 @@
 ## 2025年11月8日
 对Alitrans数据集中剩下的数据，用GPT-5进行翻译
 
-图片需要放在`/mnt/workspace/xintong/dataset/alitrans_full_images/`
+图片需要放在`/mnt/workspace/xintong/dataset/practice_ds_500/`
 
 6个语言，需要用6个terminal分别运行运行：
 - `python api_gpt5_translate.py --lang en`
