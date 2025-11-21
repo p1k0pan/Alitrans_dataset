@@ -11,6 +11,7 @@ from io import BytesIO
 import os
 import argparse
 import sys
+import requests
 
 with open('/mnt/workspace/xintong/api_key.txt', 'r') as f:
     lines = f.readlines()
@@ -44,12 +45,12 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 def call_api(text, system_prompt, image):
-    
+
     base64_image = encode_image(image)
-    response = openai.chat.completions.create(
+    payload = {
         # model="模型",
-        model = model_name, # 图文
-        messages=[
+        "model" : model_name, # 图文
+        "messages" : [
             # {'role': 'system', 'content': system_prompt},
                 {
                     "role": "user",
@@ -66,8 +67,17 @@ def call_api(text, system_prompt, image):
                     ],
                 }
         ],
-    )
-    return response.choices[0].message.content
+    }
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    response = requests.post(BASE_URL, headers=headers, json=payload)
+    response.raise_for_status()
+    response_data =  response.json()
+    return response_data["choices"][0]["message"]["content"]
 
 PROMPT = """
 Task Description:
