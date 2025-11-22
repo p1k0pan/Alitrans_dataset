@@ -68,15 +68,18 @@ def call_api(text, system_prompt, image):
                 }
         ],
     }
+    url = ''
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json",
     }
 
-    response = requests.post(BASE_URL, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     response_data =  response.json()
+    print("response data:", response_data)
+    print("return data:", response_data["choices"][0]["message"]["content"])
     return response_data["choices"][0]["message"]["content"]
 
 PROMPT = """
@@ -127,6 +130,7 @@ def process(ref, image_folder, tgt_l="en"):
             outputs = ""
             print(f"Error for idx {k}: {e}")
         v[tgt_l] = outputs
+        sys.exit()
 
     output_path = os.path.join(root, f"{model_name}_translate_{tgt_l}.json")
     print(f"Saving results to: {output_path}")
