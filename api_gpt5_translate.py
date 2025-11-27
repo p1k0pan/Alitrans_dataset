@@ -147,7 +147,7 @@ if __name__ == '__main__':
 
 
     # 使用用户输入的模型名
-    model_name = "gpt-5"
+    model_name = "gpt-5-2025-08-07-GlobalStandard"
     print(f"Using model: {model_name}", "target language: {tgt_lang}")
 
     error_file = {}
