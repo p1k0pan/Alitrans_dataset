@@ -6,7 +6,6 @@ import time
 import base64
 import tqdm
 from pathlib import Path
-from PIL import Image
 from io import BytesIO
 import os
 import argparse
@@ -21,7 +20,6 @@ BASE_URL = lines[1].strip()
 
 openai.api_key = API_KEY
 openai.base_url = BASE_URL
-
 lang_map = {
     "en": "English",
     "zh": "Chinese",
@@ -45,12 +43,12 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 def call_api(text, system_prompt, image):
-
+    
     base64_image = encode_image(image)
-    payload = {
+    response = openai.chat.completions.create(
         # model="模型",
-        "model" : model_name, # 图文
-        "messages" : [
+        model = model_name, # 图文
+        messages=[
             # {'role': 'system', 'content': system_prompt},
                 {
                     "role": "user",
@@ -67,20 +65,8 @@ def call_api(text, system_prompt, image):
                     ],
                 }
         ],
-    }
-    url = ''
-
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    response = requests.post(url, headers=headers, json=payload)
-    response.raise_for_status()
-    response_data =  response.json()
-    print("response data:", response_data)
-    print("return data:", response_data["choices"][0]["message"]["content"])
-    return response_data["choices"][0]["message"]["content"]
+    )
+    return response.choices[0].message.content
 
 PROMPT = """
 Task Description:
@@ -113,28 +99,36 @@ Chinese Text:
 """
 
 
-def process(ref, image_folder, tgt_l="en"):
-    data = json.load(open(ref, 'r'))
+def process(ref, image_folder, tgt_l="en", retries=3, retry_wait=2):
+    data = json.load(open(ref, 'r', encoding="utf-8"))
     print(len(data))
-    sleep_times = []
 
-    for k,v in tqdm.tqdm(data.items()):
+    for k, v in tqdm.tqdm(data.items()):
         zh = v["zh"]
-        prompt = PROMPT.format(tgt_lang=lang_map[tgt_l], zh_text="\n".join(zh))
+        prompt = PROMPT.format(
+            tgt_lang=lang_map[tgt_l],
+            zh_text="\n".join(zh)
+        )
         image = image_folder + k
 
-        try:
-            outputs = call_api(prompt,None,image)
-            # outputs = prompt
-        except Exception as e:
-            outputs = ""
-            print(f"Error for idx {k}: {e}")
+        for attempt in range(1, retries + 1):
+            try:
+                outputs = call_api(prompt, None, image)
+                break   # 成功 → 跳出重试循环
+            except Exception as e:
+                print(f"[{k}] 第 {attempt} 次失败：{e}")
+                if attempt < retries:
+                    time.sleep(retry_wait)
+                else:
+                    print(f"[{k}] 已重试 {retries} 次仍失败 → 写入空结果")
+                    outputs = ""
+
         v[tgt_l] = outputs
-        sys.exit()
 
     output_path = os.path.join(root, f"{model_name}_translate_{tgt_l}.json")
     print(f"Saving results to: {output_path}")
-    json.dump(data, open(output_path, 'w'), ensure_ascii=False, indent=4)
+    json.dump(data, open(output_path, 'w', encoding="utf-8"), ensure_ascii=False, indent=4)
+
 
 
 if __name__ == '__main__':
