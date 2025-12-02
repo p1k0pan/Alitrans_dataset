@@ -102,6 +102,7 @@ Chinese Text:
 def process(ref, image_folder, tgt_l="en", retries=3, retry_wait=2):
     data = json.load(open(ref, 'r', encoding="utf-8"))
     print(len(data))
+    err_data = {}
 
     for k, v in tqdm.tqdm(data.items()):
         zh = v["zh"]
@@ -110,40 +111,36 @@ def process(ref, image_folder, tgt_l="en", retries=3, retry_wait=2):
             zh_text="\n".join(zh)
         )
         image = image_folder + k
+        last_error = None  
 
         for attempt in range(1, retries + 1):
             try:
                 outputs = call_api(prompt, None, image)
+                # outputs = prompt
                 break   # 成功 → 跳出重试循环
             except Exception as e:
+                last_error = str(e)  # 记录最后一次错误
                 print(f"[{k}] 第 {attempt} 次失败：{e}")
                 if attempt < retries:
                     time.sleep(retry_wait)
                 else:
                     print(f"[{k}] 已重试 {retries} 次仍失败 → 写入空结果")
                     outputs = ""
+                    # === 记录错误到 error_log.json ===
+                    err_data[image]= last_error
 
         v[tgt_l] = outputs
 
-    output_path = os.path.join(root, f"{model_name}_translate_{tgt_l}.json")
+    output_path = os.path.join(root, f"{model_name}_translate_{tgt_l}_{os.path.basename(ref)}")
     print(f"Saving results to: {output_path}")
     json.dump(data, open(output_path, 'w', encoding="utf-8"), ensure_ascii=False, indent=4)
+    if len(err_data) > 0:
+        error_log_path = os.path.join(root, f"error_log_{model_name}_translate_{tgt_l}_{os.path.basename(ref)}")
+        json.dump(err_data, open(error_log_path, 'w'), ensure_ascii=False, indent=4)
 
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--lang', 
-        type=str, 
-        required=False,  # 如果一定要提供terminal参数
-        choices=["en", "hi", "de", "ru", "es", "ar"],  # 限定可选值为 1~6
-        help="Specify which terminal block (1 to 6) to run"
-    )
-        
-    # 解析命令行参数
-    args = parser.parse_args()
-    tgt_lang = args.lang
 
 
     # 使用用户输入的模型名
@@ -151,7 +148,7 @@ if __name__ == '__main__':
     print(f"Using model: {model_name}", "target language: {tgt_lang}")
 
     error_file = {}
-    root = f"/mnt/workspace/xintong/pjh/All_result/alitrans_translate_results/"
+    root = f"/mnt/workspace/xintong/pjh/All_result/alitrans_translate_results/gemini3_pro/"
 
     today=datetime.date.today()
 
@@ -159,6 +156,8 @@ if __name__ == '__main__':
     print("路径保存地址在", root)
     image_folder = "/mnt/workspace/xintong/dataset/practice_ds_500/"
 
-    file = "./human_trans_100.json"
-    print("file ", file)
-    process(file, image_folder, tgt_lang)
+    files = ["./human_trans_100.json", "./compare_not_in_ht100.json"]
+    for file in files:
+        print("file ", file)
+        process(file, image_folder, "en")
+        process(file, image_folder, "de")
