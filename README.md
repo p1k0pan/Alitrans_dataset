@@ -1,5 +1,13 @@
 # Alib_dataset
 
+## 2025年12月1日
+重跑空值数据
+
+运行`python api_gpt5_translate_empty.py`
+
+保存结果位置：
+`/mnt/workspace/xintong/pjh/All_result/alitrans_translate_results/`
+
 ## 2025年11月8日
 对Alitrans数据集中剩下的数据，用GPT-5进行翻译
 
