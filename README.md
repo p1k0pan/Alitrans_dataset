@@ -1,9 +1,10 @@
 # Alib_dataset
 
 ## 2025年12月1日
-重跑空值数据
-
-运行`python api_gpt5_translate_empty.py`
+1. 重跑空值数据
+    运行`python api_gpt5_translate_empty.py`
+2. Gemini-3-pro 翻译
+    运行 `python api_gemini3_pro_translate.py`
 
 保存结果位置：
 `/mnt/workspace/xintong/pjh/All_result/alitrans_translate_results/`

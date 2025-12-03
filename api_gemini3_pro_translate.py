@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
 
     # 使用用户输入的模型名
-    model_name = "gemini3-pro"
+    model_name = "gemini-3-pro-preview"
     print(f"Using model: {model_name}", "target language: {tgt_lang}")
 
     error_file = {}
